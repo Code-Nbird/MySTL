@@ -7,9 +7,9 @@ template<class DataType>
 class Vector
 {
 private:
-    DataType *data;
+    DataType *arrayData;
     int m_size;
-    int m_capicity;
+    int m_capacity;
 public:
 //built-up func
     Vector();
@@ -20,14 +20,17 @@ public:
     ~Vector();
 
 //interface
-    //operator09
-    DataType operator [](int index);
+    //operator
+    DataType& operator [](int index);
+    Vector& operator =(const Vector &v);
 
+    //swap
+    void swap(Vector &v);
     //size
     int size();
-    int resize(int change_size);
-    //capicity
-    int capicity();
+    void resize(int change_size);
+    //capacity
+    int capacity();
     //push_back
     void push_back(DataType a);
     //pop_back
@@ -43,55 +46,69 @@ public:
 template <class DataType>
 Vector<DataType>::Vector()
 {
-    this->data = new DataType[MaxNum];
+    this->arrayData = new DataType[MaxNum];
     for (int i = 0; i < MaxNum; i++)
-        this->data[i] = 0;
+        this->arrayData[i] = 0;
     this->m_size = 0;
-    this->m_capicity = MaxNum;
+    this->m_capacity = MaxNum;
 }
 
 template <class DataType>
 Vector<DataType>::Vector(int num, DataType var)
 {
-    this->data = new DataType[2*num];
+    this->arrayData = new DataType[2*num];
     for (int i = 0; i < num; i++)
-        this->data[i] = var;
+        this->arrayData[i] = var;
     this->m_size = num;
-    this->m_capicity = 2*num;
+    this->m_capacity = 2*num;
 }
 
 template <class DataType>
 Vector<DataType>::Vector(const Vector &v)
 {
-    if (v == nullptr)
-    {
-
-    }
-    else
-    {
-
-    }
+    this->m_capacity = v.m_capacity;
+    this->m_size = v.m_size;
+    this->arrayData = new DataType[this->m_capacity];
+    for (int i = 0; i < v.m_size; i++)
+        this->arrayData[i] = v->arrayData[i];
+    
 }
 
 // end-up func
 template <class DataType>
 Vector<DataType>::~Vector()
 {
-    if (this->data != nullptr)
-        delete [] this->data;
-    this->data = nullptr;
+    if (this->arrayData != nullptr)
+        delete [] this->arrayData;
+    this->arrayData = nullptr;
     this->m_size = 0;
-    this->m_capicity = 0;
+    this->m_capacity = 0;
 }
 
 // interface
-// operator09
+// operator
 template <class DataType>
-DataType Vector<DataType>::operator[](int index)
+DataType& Vector<DataType>::operator[](int index)
 {
     //invalid index
-    if (index < 0 || index > size)  return NULL;
-    else return this->data[index];
+   return this->arrayData[index];
+}
+
+template <class DataType>
+Vector<DataType>& Vector<DataType>::operator=(const Vector &v)
+{
+    if (this->arrayData != nullptr)
+    {
+        delete [] this->arrayData;
+        this->m_capacity = 0;
+        this->m_size = 0;
+    }
+    this->m_capacity = v.m_capacity;
+    this->m_size = v.m_size;
+    this->arrayData = new DataType[this->m_capacity];
+    for (int i = 0; i < this->size; i++)
+        this->arrayData[i] =  v.arrayData[i];
+    return *this;
 }
 
 // size
@@ -101,29 +118,58 @@ int Vector<DataType>::size()
     return this->m_size;
 }
 template <class DataType>
-int Vector<DataType>::resize(int change_size)
+void Vector<DataType>::resize(int change_size)
 {
-    
+    //invalid
+    if (change_size < 0 || change_size > 0x1000)    return ;
+    //if array exist
+    if (this->arrayData == nullptr)
+    {
+        this->m_capacity = change_size;
+        this->size = change_size;
+        this->arrayData = new DataType[change_size];
+        for (int i = 0; i < this->arrayData; i++)
+        {
+            this->arrayData[i] = 0;
+        }
+    }
+    else{
+        //new_base_array
+        if (change_size > this->m_capacity) 
+        {
+            DataType * new_base = new DataType[change_size];
+            for (int i = 0; i < this->m_size; i++)
+                new_base[i] = this->arrayData[i];
+            delete []this->arrayData;
+            this->arrayData = new_base;
+        }
+        this->m_capacity = change_size;
+        this->m_sizee = change_size;
+    }
 }
-// capicity
+// capacity
 template <class DataType>
-int Vector<DataType>::capicity()
+int Vector<DataType>::capacity()
 {
-    return this->m_capicity;
+    return this->m_capacity;
 }
 // push_back
 template<class DataType>
-void Vector<DataType>::push_back(DataType a)
+void Vector<DataType>::push_back(DataType var)
 {
-    if (this->m_size < this->m_capicity)
+    if (this->m_size < this->m_capacity)
     {
-        this->data[this->m_size] = a;
+        this->arrayData[this->m_size] = var;
         this->m_size ++;
     }
     else
     {
-        this->m_capicity *= 2;
-        this->data[this->]
+        this->m_capacity *= 2;
+        DataType *new_base = new DataType[this->m_capacity];
+        for (int i = 0; i < this->m_size; i++)
+            new_base[i] = this->arrayData[i];
+        delete[] this->arrayData;
+        this->arrayData = new_base;
     }
     
 }
@@ -131,19 +177,27 @@ void Vector<DataType>::push_back(DataType a)
 template <class DataType>
 void Vector<DataType>::pop_back()
 {
-
+    if (this->m_size > 0)
+        this->m_size --;
 }
 // clear Vector
 template <class DataType>
 void Vector<DataType>::clear()
 {
-
+    if (this->m_size != 0)
+    {
+        for (int i = 0; i < m_size; i++)
+            if (this->arrayData[i] != NULL)
+            {
+                this->arrayData[i] = NULL;
+            }
+    }
 }
 //assign
 template <class DataType>
 void Vector<DataType>::assign(DataType tar[])
 {
-
+    
 }
 template<class DataType>
 void Vector<DataType>::assign(const Vector &v1)
